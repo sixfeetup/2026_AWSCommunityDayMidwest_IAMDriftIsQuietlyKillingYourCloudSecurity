@@ -2,3 +2,8 @@ tricks:
 - watchdog.tricks.ShellCommandTrick:
     patterns: ['*.md']
     shell_command: make
+- watchdog.tricks.ShellCommandTrick:
+    patterns: ['themes/sixie_purple.scss']
+    shell_command: make reload-theme
+    ignore_directories: true
+    wait_for_process: true

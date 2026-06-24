@@ -28,3 +28,7 @@ tsconfig.json
 tsconfig.node.json
 vite.config.ts
 vite.config.styles.ts
+/.playwright-mcp/
+.codespellrc
+.prettier*
+build/

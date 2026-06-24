@@ -1,9 +1,13 @@
-slide-theme := wildclouds
+slide-theme := sixie_purple
+slides-pdf := slides.pdf
+decktape-size := 1200x675
+chrome-path ?=
 
 index.html: slides.md js/reveal.js dist/theme/$(slide-theme).css ## build presentation and theme
 	pandoc -t revealjs -s -V revealjs-url=. \
 		-V theme=$(slide-theme) \
 		-V width=1200 \
+		-V height=675 \
 		-V center=false \
 		-V autoPlayMedia=false \
 		-V hash=true \
@@ -28,9 +32,27 @@ css/theme/$(slide-theme).scss: themes/$(slide-theme).scss
 dist/theme/$(slide-theme).css: css/theme/$(slide-theme).scss
 	npm run build:styles
 
+reload-theme: dist/theme/$(slide-theme).css ## rebuild theme CSS and trigger Vite reload
+	touch index.html
+
+$(slides-pdf): index.html
+	@chrome_path="$(chrome-path)"; \
+	if [ -z "$$chrome_path" ] && [ -x "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ]; then \
+		chrome_path="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; \
+	fi; \
+	if [ -n "$$chrome_path" ]; then \
+		npx --yes decktape reveal -s $(decktape-size) --chrome-path="$$chrome_path" --chrome-arg=--allow-file-access-from-files "file://$(CURDIR)/index.html" "$@"; \
+	else \
+		npx --yes decktape reveal -s $(decktape-size) --chrome-arg=--allow-file-access-from-files "file://$(CURDIR)/index.html" "$@"; \
+	fi
+
+pdf: $(slides-pdf) ## build the slides as a PDF with Decktape
+
+decktape: pdf ## build the slides as a PDF with Decktape
+
 start: index.html ## bulid presentation and start server
 	@echo "Starting the local presentation server 🚀"
-	@npm start
+	@npm run dev
 
 clean: ## clean up the working directory
 	rm CONTRIBUTING.md || true
@@ -65,4 +87,4 @@ help: ## This help.
 		/^## .*/ {match($$0, "## (.+)$$"); txt=substr($$0,4,RLENGTH);printf "\n\033[33m%s\033[0m\n", txt ; target=""} \
 	' $(MAKEFILE_LIST)
 
-.PHONY: help clean start watch
+.PHONY: help clean start watch reload-theme pdf decktape
