@@ -22,7 +22,15 @@ keywords:
 #### AWS Community Day Midwest 2026
 
 ::: notes
-Include intro and Bio Here
+Hello!
+
+Six Feet Up Co-Founder and CTO and AWS Hero
+
+What's today about?
+
+IAM failures are rarely dramatic at first. They accumulate quietly.
+
+IAM is your access control layer, but unlike a firewall rule you set once, IAM is alive. Roles get created for one-time projects and never cleaned up. Keys get issued and forgotten. Permissions creep wider over time. That drift is what we're here to talk about.
 :::
 
 # 01 {.section-header .no-logo}
@@ -35,6 +43,12 @@ Include intro and Bio Here
 2. <span>Each cloud service provider provides different tools.</span>
 3. <span>IAM hygiene requires a holistic view of the entire cloud estate across providers.</span>
 4. <span>Manual audits are tedious and just snapshots in time.</span>
+
+::: notes
+Frame IAM hygiene as a challenge of time and scale. The issue is not that teams never think about IAM; it is that cloud environments keep changing after the last review.
+
+Define IAM drift as the gap between intended access and actual access over time. Projects end, people move, emergency exceptions become permanent, and point-in-time audits miss what changes the next day.
+:::
 
 # 02 {.section-header .no-logo}
 
@@ -49,6 +63,12 @@ Solutions to 4 key IAM challenges using Cloud Custodian's vendor-neutral and ope
 <span>Orphaned Identities</span>
 <span>Overly-Permissive Policies</span>
 <span>Unmet Compliance Requirements</span>
+:::
+
+::: notes
+Introduce Cloud Custodian as a vendor-neutral policy-as-code approach. The clouds have different APIs and different native tools, but the operating model can stay consistent: choose a resource, apply filters, and take actions.
+
+Keep coming back to these four failure modes: compromise risk, forgotten attack paths, excessive blast radius, and compliance evidence.
 :::
 
 # 03 {.section-header .no-logo}
@@ -88,6 +108,12 @@ policies:
           op: intersect
 ```
 
+::: notes
+Anchor this slide on initial compromise. A user without MFA is not just a hygiene finding; it is an easier path into the environment.
+
+Do not get stuck in every YAML detail. Explain the shape: the resource says what object we are checking, the filters describe the risky condition, and later actions define what happens next. The AWS and Azure examples look different because the providers expose identity data differently, but the policy pattern is the same.
+:::
+
 # 04 {.section-header .no-logo}
 
 ## Eliminating Forgotten Attack Vectors
@@ -124,6 +150,12 @@ policies:
       - type: delete
 ```
 
+::: notes
+Call these forgotten doors. Unused roles and old service account keys often started as legitimate work, then outlived the project, pipeline, vendor, or person who needed them.
+
+Be careful with the deletion examples: this is what remediation can look like, but the practical advice is to earn trust first. In a real rollout, start by reporting and validating ownership before deleting identities or keys.
+:::
+
 # 05 {.section-header .no-logo}
 
 ## Reducing the Blast Radius of a Compromised Role
@@ -155,6 +187,12 @@ policies:
       - type: scope
         value: subscription
 ```
+
+::: notes
+Use blast radius as the plain-language frame. The question is not only "can someone get in?" It is "what can they do after one identity is compromised?"
+
+For AWS, highlight allow-all policies on used identities as especially concerning because they combine broad permission with active reachability. For Azure, Owner at subscription scope is powerful enough that it should be rare, intentional, and reviewable.
+:::
 
 # 06 {.section-header .no-logo}
 
@@ -190,6 +228,12 @@ policies:
         max_threshold: 10
 ```
 
+::: notes
+Position compliance as repeatable evidence, not audit theater. Policy as code helps teams prove that the same control is checked the same way every time.
+
+The point is not only passing CIS or NIST reviews. The operational benefit is that a requirement becomes a continuously checked condition instead of a spreadsheet row someone updates once a quarter.
+:::
+
 # 07 {.section-header .no-logo}
 
 ## One Concern to Detect
@@ -224,6 +268,12 @@ policies:
     filters: *filters
     actions: *notification_action
 ```
+
+::: notes
+This is the first maturity step: detect one high-confidence concern consistently.
+
+For old access keys, the risk is straightforward and easy for teams to understand. YAML anchors keep the policy reusable, but the important message is simple: find the condition, notify the responsible team, and build confidence in the signal before taking action.
+:::
 
 # 08 {.section-header .no-logo}
 
@@ -272,6 +322,12 @@ policies:
     actions: *remediation_actions
 ```
 
+::: notes
+This is the recommended adoption path: detect, notify, tune, then remediate.
+
+Stress that remediation should come after trust. False positives are not just noisy; they can break workloads when the action changes access. Here the action disables matching keys instead of only notifying, so ownership and exception handling need to be worked out before this runs broadly.
+:::
+
 # 09 {.section-header .no-logo}
 
 ## Automating Remediation
@@ -310,10 +366,12 @@ policies: # This event-driven policy will detect, notify, and remediate.
   actions: *autoremediation_actions
 ```
 
-:::notes
+::: notes
+Distinguish remediation from autoremediation. Remediation means "I found this risky condition and can take action." Autoremediation means "I react when the risky change happens."
+
 Leverage Cloud Custodian's autoremediation capabilities built on provider function and event services, such as AWS Lambda and AWS CloudTrail.
 
-Automatically notify and remediate an IAM issue as soon as the underlying change is logged.
+In this example, CloudTrail sees a CreateAccessKey event, Lambda runs the policy, and Custodian can notify and disable the key as soon as the event is logged.
 :::
 
 # Conclusion {.conclusion-body}
@@ -331,11 +389,13 @@ Automatically notify and remediate an IAM issue as soon as the underlying change
 <span class="original-presentor">Chris Watkins, Dir. Sec.</span>
 <span class="original-conference">Governance As Code Day 2025</span>
 </div>
-:::notes
-Cloud Custodian provides a vendor-neutral, policy-as-code solution for continuous IAM hygiene across your entire cloud estate.
+::: notes
+Close with the maturity path: detect, notify, tune, remediate, automate.
+
+Cloud Custodian provides a vendor-neutral, policy-as-code solution for continuous IAM hygiene across your entire cloud estate. The win is not one clever policy; it is turning IAM hygiene from occasional cleanup into a continuous control.
 :::
 
 # Questions & Discussions {.deck-title .no-logo}
 
 #### #CloudCustodian
-#### #AWSCommnityDayMidwest
+#### #AWSCommunityDayMidwest
